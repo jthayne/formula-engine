@@ -1,0 +1,26 @@
+{
+    "name": "dloch/formula-engine",
+    "description": "A library designed for interpreting user formulas and functions into code.",
+    "type": "library",
+    "license": "BSD-3-Clause",
+    "autoload": {
+        "psr-4": {
+            "Dloch\\FormulaEngine\\": "src/"
+        }
+    },
+    "autoload-dev": {
+        "psr-4": {
+            "Dloch\\FormulaEngine\\Tests\\": "tests/"
+        }
+    },
+    "minimum-stability": "stable",
+    "require": {
+        "php": "^8.3"
+    },
+    "require-dev": {
+        "phpunit/phpunit": "^11.0"
+    },
+    "scripts": {
+        "test": "phpunit"
+    }
+}
