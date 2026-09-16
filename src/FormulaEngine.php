@@ -8,6 +8,7 @@ use Dloch\FormulaEngine\Ast\Node;
 use Dloch\FormulaEngine\Compiler\Evaluator;
 use Dloch\FormulaEngine\Compiler\PhpCodeCompiler;
 use Dloch\FormulaEngine\Compiler\SqlCompiler;
+use Dloch\FormulaEngine\Compiler\VariableCollector;
 use Dloch\FormulaEngine\Lexer\Lexer;
 use Dloch\FormulaEngine\Parser\Parser;
 
@@ -70,5 +71,16 @@ final class FormulaEngine
     public function evaluate(string $formula, array $variables): mixed
     {
         return (new Evaluator($variables))->evaluate($this->parse($formula));
+    }
+
+    /**
+     * Return the distinct names of every {Variable} referenced by the
+     * formula, in order of first appearance.
+     *
+     * @return string[]
+     */
+    public function getVariables(string $formula): array
+    {
+        return (new VariableCollector())->collect($this->parse($formula));
     }
 }

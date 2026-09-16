@@ -30,6 +30,11 @@ use Dloch\FormulaEngine\Lexer\TokenType;
  *   unary      := "NOT" unary | primary
  *   primary    := VARIABLE | STRING | NUMBER | "TRUE" | "FALSE" | "NULL"
  *                 | "(" expression ")" | ifExpr | caseExpr
+ *
+ * Note: because caseExpr consumes "|" branches greedily, a Case nested as
+ * a non-final value inside another If/Case (e.g. an If's "then") must be
+ * wrapped in parentheses so its branch loop stops at the enclosing ")"
+ * instead of swallowing the outer formula's remaining "|" branches.
  */
 final class Parser
 {

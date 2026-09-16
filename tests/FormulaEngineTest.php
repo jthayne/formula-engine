@@ -56,4 +56,24 @@ final class FormulaEngineTest extends TestCase
 
         $engine->evaluate('NotAFunction ({A})|1|2', []);
     }
+
+    public function testGetVariablesReturnsDistinctNamesInOrderOfAppearance(): void
+    {
+        $engine = new FormulaEngine();
+
+        self::assertSame(
+            ['Income'],
+            $engine->getVariables('If ({Income} < 1000)|"poor"|"rich"')
+        );
+
+        self::assertSame(
+            ['Status'],
+            $engine->getVariables('Case ({Status})|"Approved","green"|"Denied","red"')
+        );
+
+        self::assertSame(
+            ['B', 'A', 'C'],
+            $engine->getVariables('If ({B} > 0 AND {A} > 0)|{C}|{A}')
+        );
+    }
 }
