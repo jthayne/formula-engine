@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace Dloch\FormulaEngine\Ast;
+namespace Jthayne\FormulaEngine\Ast;
 
 /**
  * Case (subject)|value1,result1|value2,result2|...|default

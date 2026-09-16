@@ -2,15 +2,15 @@
 
 declare(strict_types=1);
 
-namespace Dloch\FormulaEngine;
+namespace Jthayne\FormulaEngine;
 
-use Dloch\FormulaEngine\Ast\Node;
-use Dloch\FormulaEngine\Compiler\Evaluator;
-use Dloch\FormulaEngine\Compiler\PhpCodeCompiler;
-use Dloch\FormulaEngine\Compiler\SqlCompiler;
-use Dloch\FormulaEngine\Compiler\VariableCollector;
-use Dloch\FormulaEngine\Lexer\Lexer;
-use Dloch\FormulaEngine\Parser\Parser;
+use Jthayne\FormulaEngine\Ast\Node;
+use Jthayne\FormulaEngine\Compiler\Evaluator;
+use Jthayne\FormulaEngine\Compiler\PhpCodeCompiler;
+use Jthayne\FormulaEngine\Compiler\SqlCompiler;
+use Jthayne\FormulaEngine\Compiler\VariableCollector;
+use Jthayne\FormulaEngine\Lexer\Lexer;
+use Jthayne\FormulaEngine\Parser\Parser;
 
 /**
  * Entry point for parsing and compiling user-authored formulas such as:

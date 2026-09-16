@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace Dloch\FormulaEngine\Exception;
+namespace Jthayne\FormulaEngine\Exception;
 
 /**
  * Raised at evaluation time when a formula references a variable that was

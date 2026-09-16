@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace Dloch\FormulaEngine\Ast;
+namespace Jthayne\FormulaEngine\Ast;
 
 /**
  * A unary expression, currently only NOT.

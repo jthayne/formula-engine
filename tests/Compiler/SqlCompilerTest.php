@@ -2,11 +2,11 @@
 
 declare(strict_types=1);
 
-namespace Dloch\FormulaEngine\Tests\Compiler;
+namespace Jthayne\FormulaEngine\Tests\Compiler;
 
-use Dloch\FormulaEngine\Compiler\SqlCompiler;
-use Dloch\FormulaEngine\Lexer\Lexer;
-use Dloch\FormulaEngine\Parser\Parser;
+use Jthayne\FormulaEngine\Compiler\SqlCompiler;
+use Jthayne\FormulaEngine\Lexer\Lexer;
+use Jthayne\FormulaEngine\Parser\Parser;
 use PHPUnit\Framework\TestCase;
 
 final class SqlCompilerTest extends TestCase

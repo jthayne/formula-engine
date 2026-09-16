@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace Dloch\FormulaEngine\Lexer;
+namespace Jthayne\FormulaEngine\Lexer;
 
 enum TokenType
 {

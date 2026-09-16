@@ -2,11 +2,11 @@
 
 declare(strict_types=1);
 
-namespace Dloch\FormulaEngine\Tests\Compiler;
+namespace Jthayne\FormulaEngine\Tests\Compiler;
 
-use Dloch\FormulaEngine\Compiler\VariableCollector;
-use Dloch\FormulaEngine\Lexer\Lexer;
-use Dloch\FormulaEngine\Parser\Parser;
+use Jthayne\FormulaEngine\Compiler\VariableCollector;
+use Jthayne\FormulaEngine\Lexer\Lexer;
+use Jthayne\FormulaEngine\Parser\Parser;
 use PHPUnit\Framework\TestCase;
 
 final class VariableCollectorTest extends TestCase

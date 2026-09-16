@@ -2,10 +2,10 @@
 
 declare(strict_types=1);
 
-namespace Dloch\FormulaEngine\Tests;
+namespace Jthayne\FormulaEngine\Tests;
 
-use Dloch\FormulaEngine\Exception\SyntaxException;
-use Dloch\FormulaEngine\FormulaEngine;
+use Jthayne\FormulaEngine\Exception\SyntaxException;
+use Jthayne\FormulaEngine\FormulaEngine;
 use PHPUnit\Framework\TestCase;
 
 final class FormulaEngineTest extends TestCase

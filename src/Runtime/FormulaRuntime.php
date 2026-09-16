@@ -2,14 +2,14 @@
 
 declare(strict_types=1);
 
-namespace Dloch\FormulaEngine\Runtime;
+namespace Jthayne\FormulaEngine\Runtime;
 
-use Dloch\FormulaEngine\Exception\UndefinedVariableException;
+use Jthayne\FormulaEngine\Exception\UndefinedVariableException;
 
 /**
  * Helper functions referenced by name from compiled PHP code, kept outside
  * of the compiled closures so the generated source stays small and
- * behaves identically to the {@see \Dloch\FormulaEngine\Compiler\Evaluator}.
+ * behaves identically to the {@see \Jthayne\FormulaEngine\Compiler\Evaluator}.
  */
 final class FormulaRuntime
 {

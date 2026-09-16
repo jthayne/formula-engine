@@ -2,16 +2,16 @@
 
 declare(strict_types=1);
 
-namespace Dloch\FormulaEngine\Compiler;
+namespace Jthayne\FormulaEngine\Compiler;
 
-use Dloch\FormulaEngine\Ast\BinaryExpressionNode;
-use Dloch\FormulaEngine\Ast\CaseNode;
-use Dloch\FormulaEngine\Ast\IfNode;
-use Dloch\FormulaEngine\Ast\LiteralNode;
-use Dloch\FormulaEngine\Ast\Node;
-use Dloch\FormulaEngine\Ast\NodeVisitor;
-use Dloch\FormulaEngine\Ast\UnaryExpressionNode;
-use Dloch\FormulaEngine\Ast\VariableNode;
+use Jthayne\FormulaEngine\Ast\BinaryExpressionNode;
+use Jthayne\FormulaEngine\Ast\CaseNode;
+use Jthayne\FormulaEngine\Ast\IfNode;
+use Jthayne\FormulaEngine\Ast\LiteralNode;
+use Jthayne\FormulaEngine\Ast\Node;
+use Jthayne\FormulaEngine\Ast\NodeVisitor;
+use Jthayne\FormulaEngine\Ast\UnaryExpressionNode;
+use Jthayne\FormulaEngine\Ast\VariableNode;
 
 /**
  * Walks a formula AST and collects the distinct names of every {Variable}

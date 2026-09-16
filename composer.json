@@ -1,16 +1,16 @@
 {
-    "name": "dloch/formula-engine",
+    "name": "jthayne/formula-engine",
     "description": "A library designed for interpreting user formulas and functions into code.",
     "type": "library",
     "license": "BSD-3-Clause",
     "autoload": {
         "psr-4": {
-            "Dloch\\FormulaEngine\\": "src/"
+            "Jthayne\\FormulaEngine\\": "src/"
         }
     },
     "autoload-dev": {
         "psr-4": {
-            "Dloch\\FormulaEngine\\Tests\\": "tests/"
+            "Jthayne\\FormulaEngine\\Tests\\": "tests/"
         }
     },
     "minimum-stability": "stable",

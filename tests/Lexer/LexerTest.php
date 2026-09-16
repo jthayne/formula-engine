@@ -2,11 +2,11 @@
 
 declare(strict_types=1);
 
-namespace Dloch\FormulaEngine\Tests\Lexer;
+namespace Jthayne\FormulaEngine\Tests\Lexer;
 
-use Dloch\FormulaEngine\Exception\SyntaxException;
-use Dloch\FormulaEngine\Lexer\Lexer;
-use Dloch\FormulaEngine\Lexer\TokenType;
+use Jthayne\FormulaEngine\Exception\SyntaxException;
+use Jthayne\FormulaEngine\Lexer\Lexer;
+use Jthayne\FormulaEngine\Lexer\TokenType;
 use PHPUnit\Framework\TestCase;
 
 final class LexerTest extends TestCase

@@ -2,10 +2,10 @@
 
 declare(strict_types=1);
 
-namespace Dloch\FormulaEngine\Tests\Compiler;
+namespace Jthayne\FormulaEngine\Tests\Compiler;
 
-use Dloch\FormulaEngine\Exception\UndefinedVariableException;
-use Dloch\FormulaEngine\FormulaEngine;
+use Jthayne\FormulaEngine\Exception\UndefinedVariableException;
+use Jthayne\FormulaEngine\FormulaEngine;
 use PHPUnit\Framework\TestCase;
 
 final class PhpCodeCompilerTest extends TestCase

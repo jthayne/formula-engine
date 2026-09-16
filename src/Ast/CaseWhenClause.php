@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace Dloch\FormulaEngine\Ast;
+namespace Jthayne\FormulaEngine\Ast;
 
 /**
  * One `value,result` branch of a Case expression.

@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace Dloch\FormulaEngine\Exception;
+namespace Jthayne\FormulaEngine\Exception;
 
 /**
  * Raised when a formula cannot be tokenized or parsed.

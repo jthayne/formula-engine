@@ -2,19 +2,19 @@
 
 declare(strict_types=1);
 
-namespace Dloch\FormulaEngine\Parser;
+namespace Jthayne\FormulaEngine\Parser;
 
-use Dloch\FormulaEngine\Ast\BinaryExpressionNode;
-use Dloch\FormulaEngine\Ast\CaseNode;
-use Dloch\FormulaEngine\Ast\CaseWhenClause;
-use Dloch\FormulaEngine\Ast\IfNode;
-use Dloch\FormulaEngine\Ast\LiteralNode;
-use Dloch\FormulaEngine\Ast\Node;
-use Dloch\FormulaEngine\Ast\UnaryExpressionNode;
-use Dloch\FormulaEngine\Ast\VariableNode;
-use Dloch\FormulaEngine\Exception\SyntaxException;
-use Dloch\FormulaEngine\Lexer\Token;
-use Dloch\FormulaEngine\Lexer\TokenType;
+use Jthayne\FormulaEngine\Ast\BinaryExpressionNode;
+use Jthayne\FormulaEngine\Ast\CaseNode;
+use Jthayne\FormulaEngine\Ast\CaseWhenClause;
+use Jthayne\FormulaEngine\Ast\IfNode;
+use Jthayne\FormulaEngine\Ast\LiteralNode;
+use Jthayne\FormulaEngine\Ast\Node;
+use Jthayne\FormulaEngine\Ast\UnaryExpressionNode;
+use Jthayne\FormulaEngine\Ast\VariableNode;
+use Jthayne\FormulaEngine\Exception\SyntaxException;
+use Jthayne\FormulaEngine\Lexer\Token;
+use Jthayne\FormulaEngine\Lexer\TokenType;
 
 /**
  * Recursive-descent parser that turns a token stream into a formula AST.
