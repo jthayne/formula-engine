@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Jthayne\FormulaEngine\Tests\Compiler;
 
 use Jthayne\FormulaEngine\Compiler\Evaluator;
+use Jthayne\FormulaEngine\Exception\UndefinedFunctionException;
 use Jthayne\FormulaEngine\Exception\UndefinedVariableException;
 use Jthayne\FormulaEngine\Lexer\Lexer;
 use Jthayne\FormulaEngine\Parser\Parser;
@@ -12,12 +13,12 @@ use PHPUnit\Framework\TestCase;
 
 final class EvaluatorTest extends TestCase
 {
-    private function evaluate(string $formula, array $variables): mixed
+    private function evaluate(string $formula, array $variables, array $functions = []): mixed
     {
         $tokens = (new Lexer())->tokenize($formula);
         $ast = (new Parser($tokens))->parse();
 
-        return (new Evaluator($variables))->evaluate($ast);
+        return (new Evaluator($variables, $functions))->evaluate($ast);
     }
 
     public function testEvaluatesIfTrueBranch(): void
@@ -94,5 +95,42 @@ final class EvaluatorTest extends TestCase
         $result = $this->evaluate('If ({Income} == NULL)|"unknown"|"known"', ['Income' => null]);
 
         self::assertSame('unknown', $result);
+    }
+
+    public function testEvaluatesBuiltInTodayFunctionWithNoArguments(): void
+    {
+        $result = $this->evaluate('If ({Date} == Today())|"today"|"not today"', [
+            'Date' => (new \DateTimeImmutable())->format('Y-m-d'),
+        ]);
+
+        self::assertSame('today', $result);
+    }
+
+    public function testEvaluatesCallerSuppliedFunctionWithVariableArgument(): void
+    {
+        $formula = 'If ({ID} > 0)|GetNameFromID({ID})|"none"';
+
+        $result = $this->evaluate($formula, ['ID' => 7], [
+            'GetNameFromID' => fn (int $id): string => "User-{$id}",
+        ]);
+
+        self::assertSame('User-7', $result);
+    }
+
+    public function testCallerSuppliedFunctionOverridesBuiltIn(): void
+    {
+        $result = $this->evaluate('If (TRUE)|Today()|"no"', [], [
+            'Today' => fn (): string => 'overridden',
+        ]);
+
+        self::assertSame('overridden', $result);
+    }
+
+    public function testThrowsOnUndefinedFunction(): void
+    {
+        $this->expectException(UndefinedFunctionException::class);
+        $this->expectExceptionMessage('Undefined function "NotAFunction"');
+
+        $this->evaluate('If (TRUE)|NotAFunction()|"no"', []);
     }
 }

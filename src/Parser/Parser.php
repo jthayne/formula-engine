@@ -7,6 +7,7 @@ namespace Jthayne\FormulaEngine\Parser;
 use Jthayne\FormulaEngine\Ast\BinaryExpressionNode;
 use Jthayne\FormulaEngine\Ast\CaseNode;
 use Jthayne\FormulaEngine\Ast\CaseWhenClause;
+use Jthayne\FormulaEngine\Ast\FunctionCallNode;
 use Jthayne\FormulaEngine\Ast\IfNode;
 use Jthayne\FormulaEngine\Ast\LiteralNode;
 use Jthayne\FormulaEngine\Ast\Node;
@@ -29,7 +30,8 @@ use Jthayne\FormulaEngine\Lexer\TokenType;
  *   comparison := unary ( operator unary )?
  *   unary      := "NOT" unary | primary
  *   primary    := VARIABLE | STRING | NUMBER | "TRUE" | "FALSE" | "NULL"
- *                 | "(" expression ")" | ifExpr | caseExpr
+ *                 | "(" expression ")" | ifExpr | caseExpr | functionCall
+ *   functionCall := IDENTIFIER "(" ( expression ( "," expression )* )? ")"
  *
  * Note: because caseExpr consumes "|" branches greedily, a Case nested as
  * a non-final value inside another If/Case (e.g. an If's "then") must be
@@ -215,10 +217,7 @@ final class Parser
                     'NULL' => $this->consumeLiteral(null),
                     'IF' => $this->parseIf(),
                     'CASE' => $this->parseCase(),
-                    default => throw new SyntaxException(
-                        sprintf('Unexpected identifier "%s"', $token->value),
-                        $token->position
-                    ),
+                    default => $this->parseFunctionCall($token),
                 };
 
             default:
@@ -234,6 +233,32 @@ final class Parser
         $this->advance();
 
         return new LiteralNode($value);
+    }
+
+    private function parseFunctionCall(Token $name): Node
+    {
+        $this->advance();
+
+        if (!$this->check(TokenType::LParen)) {
+            throw new SyntaxException(sprintf('Unexpected identifier "%s"', $name->value), $name->position);
+        }
+
+        $this->advance();
+
+        $arguments = [];
+
+        if (!$this->check(TokenType::RParen)) {
+            $arguments[] = $this->parseExpression();
+
+            while ($this->check(TokenType::Comma)) {
+                $this->advance();
+                $arguments[] = $this->parseExpression();
+            }
+        }
+
+        $this->expect(TokenType::RParen, sprintf('Expected ")" after arguments to "%s"', $name->value));
+
+        return new FunctionCallNode($name->value, $arguments);
     }
 
     private function current(): Token

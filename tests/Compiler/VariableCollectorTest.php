@@ -57,4 +57,9 @@ final class VariableCollectorTest extends TestCase
     {
         self::assertSame([], $this->collect('If (1 < 2)|"yes"|"no"'));
     }
+
+    public function testCollectsVariablesFromFunctionArguments(): void
+    {
+        self::assertSame(['ID'], $this->collect('If (TRUE)|GetNameFromID({ID})|"none"'));
+    }
 }

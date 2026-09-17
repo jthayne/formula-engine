@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Jthayne\FormulaEngine\Tests\Compiler;
 
 use Jthayne\FormulaEngine\Compiler\SqlCompiler;
+use Jthayne\FormulaEngine\Exception\UnsupportedFunctionException;
 use Jthayne\FormulaEngine\Lexer\Lexer;
 use Jthayne\FormulaEngine\Parser\Parser;
 use PHPUnit\Framework\TestCase;
@@ -75,5 +76,13 @@ final class SqlCompilerTest extends TestCase
         $sql = $this->compile('If ({Active} == TRUE)|NULL|FALSE');
 
         self::assertSame('CASE WHEN (Active = TRUE) THEN NULL ELSE FALSE END', $sql);
+    }
+
+    public function testThrowsWhenFormulaContainsFunctionCall(): void
+    {
+        $this->expectException(UnsupportedFunctionException::class);
+        $this->expectExceptionMessage('Function "Today" cannot be compiled to SQL');
+
+        $this->compile('If ({Date} == Today())|"today"|"not today"');
     }
 }

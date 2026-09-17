@@ -6,12 +6,14 @@ namespace Jthayne\FormulaEngine\Compiler;
 
 use Jthayne\FormulaEngine\Ast\BinaryExpressionNode;
 use Jthayne\FormulaEngine\Ast\CaseNode;
+use Jthayne\FormulaEngine\Ast\FunctionCallNode;
 use Jthayne\FormulaEngine\Ast\IfNode;
 use Jthayne\FormulaEngine\Ast\LiteralNode;
 use Jthayne\FormulaEngine\Ast\Node;
 use Jthayne\FormulaEngine\Ast\NodeVisitor;
 use Jthayne\FormulaEngine\Ast\UnaryExpressionNode;
 use Jthayne\FormulaEngine\Ast\VariableNode;
+use Jthayne\FormulaEngine\Exception\UnsupportedFunctionException;
 
 /**
  * Compiles a formula AST into a raw SQL expression using CASE WHEN.
@@ -72,6 +74,11 @@ final class SqlCompiler implements NodeVisitor
             'NOT' => sprintf('NOT (%s)', $node->operand->accept($this)),
             default => throw new \LogicException(sprintf('Unsupported unary operator "%s"', $node->operator)),
         };
+    }
+
+    public function visitFunctionCall(FunctionCallNode $node): mixed
+    {
+        throw new UnsupportedFunctionException($node->name, 'SQL');
     }
 
     public function visitIf(IfNode $node): mixed

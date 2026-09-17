@@ -6,6 +6,7 @@ namespace Jthayne\FormulaEngine\Compiler;
 
 use Jthayne\FormulaEngine\Ast\BinaryExpressionNode;
 use Jthayne\FormulaEngine\Ast\CaseNode;
+use Jthayne\FormulaEngine\Ast\FunctionCallNode;
 use Jthayne\FormulaEngine\Ast\IfNode;
 use Jthayne\FormulaEngine\Ast\LiteralNode;
 use Jthayne\FormulaEngine\Ast\Node;
@@ -57,6 +58,15 @@ final class VariableCollector implements NodeVisitor
     public function visitUnaryExpression(UnaryExpressionNode $node): mixed
     {
         $node->operand->accept($this);
+
+        return null;
+    }
+
+    public function visitFunctionCall(FunctionCallNode $node): mixed
+    {
+        foreach ($node->arguments as $argument) {
+            $argument->accept($this);
+        }
 
         return null;
     }

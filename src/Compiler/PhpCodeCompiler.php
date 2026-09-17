@@ -6,6 +6,7 @@ namespace Jthayne\FormulaEngine\Compiler;
 
 use Jthayne\FormulaEngine\Ast\BinaryExpressionNode;
 use Jthayne\FormulaEngine\Ast\CaseNode;
+use Jthayne\FormulaEngine\Ast\FunctionCallNode;
 use Jthayne\FormulaEngine\Ast\IfNode;
 use Jthayne\FormulaEngine\Ast\LiteralNode;
 use Jthayne\FormulaEngine\Ast\Node;
@@ -61,6 +62,21 @@ final class PhpCodeCompiler implements NodeVisitor
             'NOT' => sprintf('(!(%s))', $node->operand->accept($this)),
             default => throw new \LogicException(sprintf('Unsupported unary operator "%s"', $node->operator)),
         };
+    }
+
+    public function visitFunctionCall(FunctionCallNode $node): mixed
+    {
+        $argumentsCode = array_map(
+            fn (Node $argument): string => $argument->accept($this),
+            $node->arguments
+        );
+
+        return sprintf(
+            '\%s::callFunction($functions, %s, [%s])',
+            FormulaRuntime::class,
+            var_export($node->name, true),
+            implode(', ', $argumentsCode)
+        );
     }
 
     public function visitIf(IfNode $node): mixed

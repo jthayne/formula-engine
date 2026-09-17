@@ -14,7 +14,7 @@ final class PhpCodeCompilerTest extends TestCase
     {
         $code = (new FormulaEngine())->toPhpCode('If ({Income} < 1000)|"poor"|"rich"');
 
-        self::assertStringContainsString('static function (array $variables): mixed', $code);
+        self::assertStringContainsString('static function (array $variables, array $functions = []): mixed', $code);
         self::assertStringContainsString('return', $code);
         self::assertStringContainsString("'poor'", $code);
         self::assertStringContainsString("'rich'", $code);
@@ -65,5 +65,21 @@ final class PhpCodeCompilerTest extends TestCase
         self::assertSame('both small', $closure(['A' => 0, 'B' => 0]));
         self::assertSame('a small', $closure(['A' => 0, 'B' => 5]));
         self::assertSame('neither', $closure(['A' => 5, 'B' => 5]));
+    }
+
+    public function testGeneratedClosureCallsBuiltInFunctionWithoutCallerSupport(): void
+    {
+        $closure = (new FormulaEngine())->toClosure('If ({Today} == Today())|"today"|"not today"');
+
+        self::assertSame('today', $closure(['Today' => (new \DateTimeImmutable())->format('Y-m-d')]));
+    }
+
+    public function testGeneratedClosureCallsCallerSuppliedFunction(): void
+    {
+        $closure = (new FormulaEngine())->toClosure('If ({ID} > 0)|GetNameFromID({ID})|"none"');
+
+        $result = $closure(['ID' => 42], ['GetNameFromID' => fn (int $id): string => "Name-{$id}"]);
+
+        self::assertSame('Name-42', $result);
     }
 }

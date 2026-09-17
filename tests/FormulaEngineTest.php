@@ -57,6 +57,26 @@ final class FormulaEngineTest extends TestCase
         $engine->evaluate('NotAFunction ({A})|1|2', []);
     }
 
+    public function testEvaluateCallsBuiltInAndCallerSuppliedFunctions(): void
+    {
+        $engine = new FormulaEngine();
+        $formula = 'If ({SignupDate} == Today())|"new"|GetNameFromID({ID})';
+
+        self::assertSame(
+            'new',
+            $engine->evaluate($formula, ['SignupDate' => (new \DateTimeImmutable())->format('Y-m-d'), 'ID' => 1])
+        );
+
+        self::assertSame(
+            'User-42',
+            $engine->evaluate(
+                $formula,
+                ['SignupDate' => '2000-01-01', 'ID' => 42],
+                ['GetNameFromID' => fn (int $id): string => "User-{$id}"]
+            )
+        );
+    }
+
     public function testGetVariablesReturnsDistinctNamesInOrderOfAppearance(): void
     {
         $engine = new FormulaEngine();

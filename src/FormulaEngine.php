@@ -17,6 +17,11 @@ use Jthayne\FormulaEngine\Parser\Parser;
  *
  *   If ({Income} < 1000)|"poor"|"rich"
  *   Case ({Status})|"Approved","green"|"Denied","red"
+ *   If ({SignupDate} == Today())|"new"|GetNameFromID({ID})
+ *
+ * Functions such as `Today()` or a caller-supplied `GetNameFromID({ID})` can
+ * be called by name; see the `$functions` parameter of {@see evaluate()}
+ * and {@see toClosure()}.
  */
 final class FormulaEngine
 {
@@ -41,17 +46,21 @@ final class FormulaEngine
 
     /**
      * Compile the formula into the source code of a PHP anonymous function
-     * that accepts an array of variables and returns the formula's result.
+     * that accepts an array of variables and an array of functions, and
+     * returns the formula's result.
      */
     public function toPhpCode(string $formula): string
     {
         $expression = (new PhpCodeCompiler())->compile($this->parse($formula));
 
-        return "static function (array \$variables): mixed {\n    return {$expression};\n}";
+        return "static function (array \$variables, array \$functions = []): mixed {\n    return {$expression};\n}";
     }
 
     /**
      * Compile the formula into an actual, callable PHP Closure.
+     *
+     * The returned closure accepts `(array $variables, array $functions = [])`;
+     * see {@see evaluate()} for what `$functions` is for.
      */
     public function toClosure(string $formula): \Closure
     {
@@ -67,10 +76,19 @@ final class FormulaEngine
      * Parse and immediately evaluate the formula against a set of variables.
      *
      * @param array<string, mixed> $variables
+     * @param array<string, callable> $functions Functions callable by name
+     *                                            from the formula (e.g.
+     *                                            `Today()`, or a
+     *                                            caller-supplied
+     *                                            `GetNameFromID({ID})`
+     *                                            closing over an external
+     *                                            lookup). A function here
+     *                                            overrides a built-in of
+     *                                            the same name.
      */
-    public function evaluate(string $formula, array $variables): mixed
+    public function evaluate(string $formula, array $variables, array $functions = []): mixed
     {
-        return (new Evaluator($variables))->evaluate($this->parse($formula));
+        return (new Evaluator($variables, $functions))->evaluate($this->parse($formula));
     }
 
     /**

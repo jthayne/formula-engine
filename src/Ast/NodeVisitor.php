@@ -14,6 +14,8 @@ interface NodeVisitor
 
     public function visitUnaryExpression(UnaryExpressionNode $node): mixed;
 
+    public function visitFunctionCall(FunctionCallNode $node): mixed;
+
     public function visitIf(IfNode $node): mixed;
 
     public function visitCase(CaseNode $node): mixed;

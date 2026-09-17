@@ -6,6 +6,7 @@ namespace Jthayne\FormulaEngine\Tests\Parser;
 
 use Jthayne\FormulaEngine\Ast\BinaryExpressionNode;
 use Jthayne\FormulaEngine\Ast\CaseNode;
+use Jthayne\FormulaEngine\Ast\FunctionCallNode;
 use Jthayne\FormulaEngine\Ast\IfNode;
 use Jthayne\FormulaEngine\Ast\LiteralNode;
 use Jthayne\FormulaEngine\Ast\Node;
@@ -113,6 +114,35 @@ final class ParserTest extends TestCase
         self::assertSame('both small', $node->then->then->value);
         self::assertSame('a small', $node->then->else->value);
         self::assertSame('neither', $node->else->value);
+    }
+
+    public function testParsesFunctionCallWithNoArguments(): void
+    {
+        $node = $this->parse('If (TRUE)|Today()|"no"');
+
+        self::assertInstanceOf(IfNode::class, $node);
+        self::assertInstanceOf(FunctionCallNode::class, $node->then);
+        self::assertSame('Today', $node->then->name);
+        self::assertSame([], $node->then->arguments);
+    }
+
+    public function testParsesFunctionCallWithVariableAndMultipleArguments(): void
+    {
+        $node = $this->parse('If (TRUE)|Lookup({ID}, "type")|"no"');
+
+        self::assertInstanceOf(FunctionCallNode::class, $node->then);
+        self::assertSame('Lookup', $node->then->name);
+        self::assertCount(2, $node->then->arguments);
+        self::assertInstanceOf(VariableNode::class, $node->then->arguments[0]);
+        self::assertSame('ID', $node->then->arguments[0]->name);
+        self::assertSame('type', $node->then->arguments[1]->value);
+    }
+
+    public function testThrowsWhenFunctionCallMissingClosingParen(): void
+    {
+        $this->expectException(SyntaxException::class);
+
+        $this->parse('If (TRUE)|Today(|"no"');
     }
 
     public function testThrowsWhenFormulaDoesNotStartWithKnownFunction(): void
