@@ -133,7 +133,7 @@ final class FormulaEngineTest extends TestCase
         $engine = new FormulaEngine();
 
         self::assertSame(
-            'Expected "If" or "Case", found "NotAFunction" at position 0',
+            'Unexpected trailing input after formula, found "|" at position 20',
             $engine->validate('NotAFunction ([[A]])|1|2')
         );
     }

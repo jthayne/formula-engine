@@ -21,7 +21,7 @@ use Jthayne\FormulaEngine\Lexer\TokenType;
  * Recursive-descent parser that turns a token stream into a formula AST.
  *
  * Grammar (informal):
- *   formula    := ifExpr | caseExpr
+ *   formula    := expression
  *   ifExpr     := "If" "(" expression ")" "|" expression "|" expression
  *   caseExpr   := "Case" "(" expression ")" ( "|" expression ( "," expression )? )+
  *   expression := logicalOr
@@ -53,26 +53,10 @@ final class Parser
 
     public function parse(): Node
     {
-        $node = $this->parseFormula();
+        $node = $this->parseExpression();
         $this->expect(TokenType::Eof, 'Unexpected trailing input after formula');
 
         return $node;
-    }
-
-    private function parseFormula(): Node
-    {
-        if ($this->checkKeyword('IF')) {
-            return $this->parseIf();
-        }
-
-        if ($this->checkKeyword('CASE')) {
-            return $this->parseCase();
-        }
-
-        throw new SyntaxException(
-            sprintf('Expected "If" or "Case", found "%s"', $this->current()->value),
-            $this->current()->position
-        );
     }
 
     private function parseIf(): Node

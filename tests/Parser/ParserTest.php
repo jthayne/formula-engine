@@ -190,12 +190,19 @@ final class ParserTest extends TestCase
         $this->parse('If (TRUE)|Today(|"no"');
     }
 
-    public function testThrowsWhenFormulaDoesNotStartWithKnownFunction(): void
+    public function testParsesBareExpressionAsAWholeFormula(): void
+    {
+        self::assertInstanceOf(FunctionCallNode::class, $this->parse('Join([[A]], [[B]])'));
+        self::assertInstanceOf(VariableNode::class, $this->parse('[[A]]'));
+        self::assertInstanceOf(BinaryExpressionNode::class, $this->parse('[[A]] + [[B]]'));
+    }
+
+    public function testThrowsWhenBareFunctionCallFormulaHasTrailingPipes(): void
     {
         $this->expectException(SyntaxException::class);
-        $this->expectExceptionMessage('Expected "If" or "Case"');
+        $this->expectExceptionMessage('Unexpected trailing input');
 
-        $this->parse('Wat ([[A]] < 1)|1|2');
+        $this->parse('Wat([[A]])|1|2');
     }
 
     public function testThrowsWhenIfMissingSecondPipe(): void

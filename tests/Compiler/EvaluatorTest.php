@@ -512,12 +512,33 @@ final class EvaluatorTest extends TestCase
         self::assertSame('', $this->evaluate('If (TRUE)|Join()|"no"', []));
     }
 
+    public function testEvaluatesBuiltInJoinWithFunctionDropsNullValues(): void
+    {
+        $formula = 'If (TRUE)|JoinWith(" - ", [[A]], [[B]], [[C]])|"no"';
+
+        self::assertSame('first - third', $this->evaluate($formula, ['A' => 'first', 'B' => null, 'C' => 'third']));
+        self::assertSame('first - second - third', $this->evaluate($formula, ['A' => 'first', 'B' => 'second', 'C' => 'third']));
+    }
+
+    public function testJoinWithReturnsEmptyStringWhenAllValuesAreNull(): void
+    {
+        self::assertSame(
+            '',
+            $this->evaluate('If (TRUE)|JoinWith(" - ", [[A]], [[B]])|"no"', ['A' => null, 'B' => null])
+        );
+    }
+
     public function testEvaluatesBuiltInTrimFunction(): void
     {
         $formula = 'If (TRUE)|Trim([[Value]])|"no"';
 
         self::assertSame('foo', $this->evaluate($formula, ['Value' => "  foo  \t\n"]));
         self::assertSame('foo', $this->evaluate($formula, ['Value' => 'foo']));
+    }
+
+    public function testTrimReturnsNullForNullInput(): void
+    {
+        self::assertNull($this->evaluate('If (TRUE)|Trim([[Value]])|"no"', ['Value' => null]));
     }
 
     public function testEvaluatesBuiltInToLowerFunction(): void

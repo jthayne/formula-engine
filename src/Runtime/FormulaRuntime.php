@@ -221,7 +221,14 @@ final class FormulaRuntime
                 static fn (mixed $value): string => (string) $value,
                 $values
             )),
-            'Trim' => static fn (string $value): string => trim($value),
+            'JoinWith' => static fn (string $separator, mixed ...$values): string => implode(
+                $separator,
+                array_map(
+                    static fn (mixed $value): string => (string) $value,
+                    array_filter($values, static fn (mixed $value): bool => $value !== null)
+                )
+            ),
+            'Trim' => static fn (?string $value): ?string => $value === null ? null : trim($value),
             'ToLower' => static fn (string $value): string => mb_strtolower($value),
             'ToUpper' => static fn (string $value): string => mb_strtoupper($value),
             'Count' => static fn (mixed ...$values): int => count(array_filter(
