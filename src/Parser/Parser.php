@@ -27,8 +27,10 @@ use Jthayne\FormulaEngine\Lexer\TokenType;
  *   expression := logicalOr
  *   logicalOr  := logicalAnd ( "OR" logicalAnd )*
  *   logicalAnd := comparison ( "AND" comparison )*
- *   comparison := unary ( operator unary )?
- *   unary      := "NOT" unary | primary
+ *   comparison := additive ( operator additive )?
+ *   additive   := multiplicative ( ("+" | "-") multiplicative )*
+ *   multiplicative := unary ( ("*" | "/") unary )*
+ *   unary      := "NOT" unary | "-" unary | primary
  *   primary    := VARIABLE | STRING | NUMBER | "TRUE" | "FALSE" | "NULL"
  *                 | "(" expression ")" | ifExpr | caseExpr | functionCall
  *   functionCall := IDENTIFIER "(" ( expression ( "," expression )* )? ")"
@@ -158,13 +160,37 @@ final class Parser
 
     private function parseComparison(): Node
     {
-        $left = $this->parseUnary();
+        $left = $this->parseAdditive();
 
         if ($this->check(TokenType::Operator)) {
             $operator = $this->advance()->value;
-            $right = $this->parseUnary();
+            $right = $this->parseAdditive();
 
             return new BinaryExpressionNode($left, $operator, $right);
+        }
+
+        return $left;
+    }
+
+    private function parseAdditive(): Node
+    {
+        $left = $this->parseMultiplicative();
+
+        while ($this->checkArithmeticOperator('+') || $this->checkArithmeticOperator('-')) {
+            $operator = $this->advance()->value;
+            $left = new BinaryExpressionNode($left, $operator, $this->parseMultiplicative());
+        }
+
+        return $left;
+    }
+
+    private function parseMultiplicative(): Node
+    {
+        $left = $this->parseUnary();
+
+        while ($this->checkArithmeticOperator('*') || $this->checkArithmeticOperator('/')) {
+            $operator = $this->advance()->value;
+            $left = new BinaryExpressionNode($left, $operator, $this->parseUnary());
         }
 
         return $left;
@@ -176,6 +202,12 @@ final class Parser
             $this->advance();
 
             return new UnaryExpressionNode('NOT', $this->parseUnary());
+        }
+
+        if ($this->checkArithmeticOperator('-')) {
+            $this->advance();
+
+            return new UnaryExpressionNode('-', $this->parseUnary());
         }
 
         return $this->parsePrimary();
@@ -279,6 +311,11 @@ final class Parser
     private function checkKeyword(string $keyword): bool
     {
         return $this->check(TokenType::Identifier) && strtoupper($this->current()->value) === $keyword;
+    }
+
+    private function checkArithmeticOperator(string $operator): bool
+    {
+        return $this->check(TokenType::ArithmeticOperator) && $this->current()->value === $operator;
     }
 
     private function expect(TokenType $type, string $message): Token

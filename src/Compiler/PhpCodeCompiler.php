@@ -49,7 +49,7 @@ final class PhpCodeCompiler implements NodeVisitor
             'OR' => '||',
             '=' => '==',
             '<>' => '!=',
-            '==', '!=', '<', '<=', '>', '>=' => $node->operator,
+            '==', '!=', '<', '<=', '>', '>=', '+', '-', '*', '/' => $node->operator,
             default => throw new \LogicException(sprintf('Unsupported operator "%s"', $node->operator)),
         };
 
@@ -58,8 +58,9 @@ final class PhpCodeCompiler implements NodeVisitor
 
     public function visitUnaryExpression(UnaryExpressionNode $node): mixed
     {
-        return match (strtoupper($node->operator)) {
+        return match ($node->operator) {
             'NOT' => sprintf('(!(%s))', $node->operand->accept($this)),
+            '-' => sprintf('(-(%s))', $node->operand->accept($this)),
             default => throw new \LogicException(sprintf('Unsupported unary operator "%s"', $node->operator)),
         };
     }

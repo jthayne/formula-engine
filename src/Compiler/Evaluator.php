@@ -78,14 +78,19 @@ final class Evaluator implements NodeVisitor
             '>=' => $left >= $right,
             '==', '=' => $left == $right,
             '!=', '<>' => $left != $right,
+            '+' => $left + $right,
+            '-' => $left - $right,
+            '*' => $left * $right,
+            '/' => $left / $right,
             default => throw new \LogicException(sprintf('Unsupported operator "%s"', $node->operator)),
         };
     }
 
     public function visitUnaryExpression(UnaryExpressionNode $node): mixed
     {
-        return match (strtoupper($node->operator)) {
+        return match ($node->operator) {
             'NOT' => !$this->toBool($node->operand->accept($this)),
+            '-' => -$node->operand->accept($this),
             default => throw new \LogicException(sprintf('Unsupported unary operator "%s"', $node->operator)),
         };
     }

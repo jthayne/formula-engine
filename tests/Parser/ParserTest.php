@@ -95,6 +95,51 @@ final class ParserTest extends TestCase
         self::assertSame('AND', $node->condition->left->operator);
     }
 
+    public function testParsesArithmeticWithMultiplicationBindingTighterThanAddition(): void
+    {
+        $node = $this->parse('If (2 + 3 * 4 == 14)|"yes"|"no"');
+
+        /** @var BinaryExpressionNode $comparison */
+        $comparison = $node->condition;
+        self::assertSame('==', $comparison->operator);
+
+        /** @var BinaryExpressionNode $addition */
+        $addition = $comparison->left;
+        self::assertInstanceOf(BinaryExpressionNode::class, $addition);
+        self::assertSame('+', $addition->operator);
+        self::assertSame(2, $addition->left->value);
+
+        /** @var BinaryExpressionNode $multiplication */
+        $multiplication = $addition->right;
+        self::assertInstanceOf(BinaryExpressionNode::class, $multiplication);
+        self::assertSame('*', $multiplication->operator);
+        self::assertSame(3, $multiplication->left->value);
+        self::assertSame(4, $multiplication->right->value);
+    }
+
+    public function testArithmeticBindsTighterThanComparison(): void
+    {
+        $node = $this->parse('If ([[Income]] + [[Raise]] <= 1000)|"poor"|"rich"');
+
+        self::assertInstanceOf(BinaryExpressionNode::class, $node->condition);
+        self::assertSame('<=', $node->condition->operator);
+        self::assertInstanceOf(BinaryExpressionNode::class, $node->condition->left);
+        self::assertSame('+', $node->condition->left->operator);
+        self::assertSame(1000, $node->condition->right->value);
+    }
+
+    public function testParsesUnaryMinusOnExpression(): void
+    {
+        $node = $this->parse('If (-[[A]] == -5)|"yes"|"no"');
+
+        self::assertInstanceOf(UnaryExpressionNode::class, $node->condition->left);
+        self::assertSame('-', $node->condition->left->operator);
+        self::assertInstanceOf(VariableNode::class, $node->condition->left->operand);
+
+        self::assertInstanceOf(LiteralNode::class, $node->condition->right);
+        self::assertSame(-5, $node->condition->right->value);
+    }
+
     public function testParsesBooleanAndNullLiterals(): void
     {
         $node = $this->parse('If ([[Active]] == TRUE)|NULL|FALSE');

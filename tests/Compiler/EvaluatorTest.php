@@ -73,6 +73,29 @@ final class EvaluatorTest extends TestCase
         self::assertSame('active', $this->evaluate($formula, ['Active' => true]));
     }
 
+    public function testEvaluatesArithmeticOperators(): void
+    {
+        self::assertSame(7, $this->evaluate('If (TRUE)|3 + 4|0', []));
+        self::assertSame(-1, $this->evaluate('If (TRUE)|3 - 4|0', []));
+        self::assertSame(12, $this->evaluate('If (TRUE)|3 * 4|0', []));
+        self::assertSame(2.5, $this->evaluate('If (TRUE)|5 / 2|0', []));
+    }
+
+    public function testEvaluatesArithmeticWithVariablesAndPrecedence(): void
+    {
+        $formula = 'If (([[Income]] + [[Raise]]) <= 1000)|"poor"|"rich"';
+
+        self::assertSame('poor', $this->evaluate($formula, ['Income' => 500, 'Raise' => 400]));
+        self::assertSame('rich', $this->evaluate($formula, ['Income' => 900, 'Raise' => 400]));
+        self::assertSame(14, $this->evaluate('If (TRUE)|2 + 3 * 4|0', []));
+    }
+
+    public function testEvaluatesUnaryMinus(): void
+    {
+        self::assertSame(-5, $this->evaluate('If (TRUE)|-[[X]]|0', ['X' => 5]));
+        self::assertSame(10, $this->evaluate('If (TRUE)|5 - -5|0', []));
+    }
+
     public function testEvaluatesNestedFormulas(): void
     {
         $formula = 'If ([[A]] < 1)|If ([[B]] < 1)|"both small"|"a small"|"neither"';

@@ -11,6 +11,7 @@ enum TokenType
     case String;
     case Number;
     case Operator;
+    case ArithmeticOperator;
     case LParen;
     case RParen;
     case Pipe;

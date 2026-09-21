@@ -78,6 +78,20 @@ final class SqlCompilerTest extends TestCase
         self::assertSame('CASE WHEN (Active = TRUE) THEN NULL ELSE FALSE END', $sql);
     }
 
+    public function testCompilesArithmeticOperatorsWithPrecedence(): void
+    {
+        $sql = $this->compile('If (([[Income]] + [[Raise]]) <= 1000)|"poor"|"rich"');
+
+        self::assertSame("CASE WHEN ((Income + Raise) <= 1000) THEN 'poor' ELSE 'rich' END", $sql);
+    }
+
+    public function testCompilesUnaryMinus(): void
+    {
+        $sql = $this->compile('If (TRUE)|-[[Income]]|0');
+
+        self::assertSame('CASE WHEN TRUE THEN -(Income) ELSE 0 END', $sql);
+    }
+
     public function testThrowsWhenFormulaContainsFunctionCall(): void
     {
         $this->expectException(UnsupportedFunctionException::class);

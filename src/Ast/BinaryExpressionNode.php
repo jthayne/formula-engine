@@ -5,7 +5,8 @@ declare(strict_types=1);
 namespace Jthayne\FormulaEngine\Ast;
 
 /**
- * A comparison (<, <=, >, >=, ==, !=) or logical (AND, OR) expression.
+ * A comparison (<, <=, >, >=, ==, !=), logical (AND, OR), or arithmetic
+ * (+, -, *, /) expression.
  */
 final class BinaryExpressionNode implements Node
 {

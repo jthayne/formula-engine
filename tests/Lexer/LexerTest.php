@@ -92,6 +92,50 @@ final class LexerTest extends TestCase
         }
     }
 
+    public function testTokenizesArithmeticOperators(): void
+    {
+        foreach (['+', '-', '*', '/'] as $operator) {
+            $tokens = (new Lexer())->tokenize("1 {$operator} 2");
+            self::assertSame(TokenType::ArithmeticOperator, $tokens[1]->type, "Failed for operator {$operator}");
+            self::assertSame($operator, $tokens[1]->value, "Failed for operator {$operator}");
+        }
+    }
+
+    public function testMinusAfterAValueIsSubtractionNotANegativeNumber(): void
+    {
+        $tokens = (new Lexer())->tokenize('[[X]]-5');
+
+        $types = array_map(static fn ($token) => $token->type, $tokens);
+
+        self::assertSame([
+            TokenType::Variable,
+            TokenType::ArithmeticOperator,
+            TokenType::Number,
+            TokenType::Eof,
+        ], $types);
+
+        self::assertSame('-', $tokens[1]->value);
+        self::assertSame('5', $tokens[2]->value);
+    }
+
+    public function testMinusAfterAnOperatorStartsANegativeNumber(): void
+    {
+        $tokens = (new Lexer())->tokenize('5- -5');
+
+        $types = array_map(static fn ($token) => $token->type, $tokens);
+
+        self::assertSame([
+            TokenType::Number,
+            TokenType::ArithmeticOperator,
+            TokenType::Number,
+            TokenType::Eof,
+        ], $types);
+
+        self::assertSame('5', $tokens[0]->value);
+        self::assertSame('-', $tokens[1]->value);
+        self::assertSame('-5', $tokens[2]->value);
+    }
+
     public function testThrowsOnUnterminatedVariable(): void
     {
         $this->expectException(SyntaxException::class);

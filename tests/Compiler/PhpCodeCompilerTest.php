@@ -67,6 +67,23 @@ final class PhpCodeCompilerTest extends TestCase
         self::assertSame('neither', $closure(['A' => 5, 'B' => 5]));
     }
 
+    public function testGeneratedClosureHandlesArithmeticOperators(): void
+    {
+        $closure = (new FormulaEngine())->toClosure(
+            'If (([[Income]] + [[Raise]]) <= 1000)|"poor"|"rich"'
+        );
+
+        self::assertSame('poor', $closure(['Income' => 500, 'Raise' => 400]));
+        self::assertSame('rich', $closure(['Income' => 900, 'Raise' => 400]));
+    }
+
+    public function testGeneratedClosureHandlesUnaryMinus(): void
+    {
+        $closure = (new FormulaEngine())->toClosure('If (TRUE)|-[[X]]|0');
+
+        self::assertSame(-5, $closure(['X' => 5]));
+    }
+
     public function testGeneratedClosureCallsBuiltInFunctionWithoutCallerSupport(): void
     {
         $closure = (new FormulaEngine())->toClosure('If ([[Today]] == Today())|"today"|"not today"');

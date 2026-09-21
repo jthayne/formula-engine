@@ -61,7 +61,7 @@ final class SqlCompiler implements NodeVisitor
             'OR' => 'OR',
             '==' => '=',
             '!=', '<>' => '<>',
-            '=', '<', '<=', '>', '>=' => $node->operator,
+            '=', '<', '<=', '>', '>=', '+', '-', '*', '/' => $node->operator,
             default => throw new \LogicException(sprintf('Unsupported operator "%s"', $node->operator)),
         };
 
@@ -70,8 +70,9 @@ final class SqlCompiler implements NodeVisitor
 
     public function visitUnaryExpression(UnaryExpressionNode $node): mixed
     {
-        return match (strtoupper($node->operator)) {
+        return match ($node->operator) {
             'NOT' => sprintf('NOT (%s)', $node->operand->accept($this)),
+            '-' => sprintf('-(%s)', $node->operand->accept($this)),
             default => throw new \LogicException(sprintf('Unsupported unary operator "%s"', $node->operator)),
         };
     }

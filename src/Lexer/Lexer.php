@@ -13,6 +13,20 @@ final class Lexer
 {
     private const TWO_CHAR_OPERATORS = ['<=', '>=', '==', '!=', '<>'];
     private const ONE_CHAR_OPERATORS = ['<', '>', '='];
+    private const ARITHMETIC_OPERATORS = ['+', '-', '*', '/'];
+
+    /**
+     * Token types that a value ends with. A "-" immediately following one of
+     * these is treated as a subtraction operator rather than the start of a
+     * negative number literal, e.g. "[[X]]-5" lexes as VARIABLE, "-", NUMBER.
+     */
+    private const VALUE_END_TYPES = [
+        TokenType::Number,
+        TokenType::String,
+        TokenType::Variable,
+        TokenType::Identifier,
+        TokenType::RParen,
+    ];
 
     /**
      * @return Token[]
@@ -22,6 +36,7 @@ final class Lexer
         $tokens = [];
         $length = strlen($source);
         $position = 0;
+        $lastType = null;
 
         while ($position < $length) {
             $char = $source[$position];
@@ -41,6 +56,7 @@ final class Lexer
 
             if ($simple !== null) {
                 $tokens[] = new Token($simple, $char, $position);
+                $lastType = $simple;
                 $position++;
                 continue;
             }
@@ -48,37 +64,54 @@ final class Lexer
             if ($char === '[' && ($source[$position + 1] ?? '') === '[') {
                 [$token, $position] = $this->readVariable($source, $position);
                 $tokens[] = $token;
+                $lastType = $token->type;
                 continue;
             }
 
             if ($char === '"') {
                 [$token, $position] = $this->readString($source, $position);
                 $tokens[] = $token;
+                $lastType = $token->type;
                 continue;
             }
 
             $two = substr($source, $position, 2);
             if (in_array($two, self::TWO_CHAR_OPERATORS, true)) {
                 $tokens[] = new Token(TokenType::Operator, $two, $position);
+                $lastType = TokenType::Operator;
                 $position += 2;
                 continue;
             }
 
             if (in_array($char, self::ONE_CHAR_OPERATORS, true)) {
                 $tokens[] = new Token(TokenType::Operator, $char, $position);
+                $lastType = TokenType::Operator;
                 $position++;
                 continue;
             }
 
-            if (ctype_digit($char) || ($char === '-' && $this->isDigit($source, $position + 1))) {
+            $startsNegativeNumber = $char === '-'
+                && $this->isDigit($source, $position + 1)
+                && !in_array($lastType, self::VALUE_END_TYPES, true);
+
+            if (ctype_digit($char) || $startsNegativeNumber) {
                 [$token, $position] = $this->readNumber($source, $position);
                 $tokens[] = $token;
+                $lastType = $token->type;
+                continue;
+            }
+
+            if (in_array($char, self::ARITHMETIC_OPERATORS, true)) {
+                $tokens[] = new Token(TokenType::ArithmeticOperator, $char, $position);
+                $lastType = TokenType::ArithmeticOperator;
+                $position++;
                 continue;
             }
 
             if (ctype_alpha($char) || $char === '_') {
                 [$token, $position] = $this->readIdentifier($source, $position);
                 $tokens[] = $token;
+                $lastType = $token->type;
                 continue;
             }
 

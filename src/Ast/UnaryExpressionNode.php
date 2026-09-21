@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace Jthayne\FormulaEngine\Ast;
 
 /**
- * A unary expression, currently only NOT.
+ * A unary expression: logical negation (NOT) or arithmetic negation (-).
  */
 final class UnaryExpressionNode implements Node
 {
