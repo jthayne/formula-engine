@@ -28,7 +28,7 @@ final class ParserTest extends TestCase
 
     public function testParsesIfIntoIfNode(): void
     {
-        $node = $this->parse('If ({Income} < 1000)|"poor"|"rich"');
+        $node = $this->parse('If ([[Income]] < 1000)|"poor"|"rich"');
 
         self::assertInstanceOf(IfNode::class, $node);
         self::assertInstanceOf(BinaryExpressionNode::class, $node->condition);
@@ -43,7 +43,7 @@ final class ParserTest extends TestCase
 
     public function testParsesCaseIntoCaseNodeWithoutDefault(): void
     {
-        $node = $this->parse('Case ({Status})|"Approved","green"|"Denied","red"');
+        $node = $this->parse('Case ([[Status]])|"Approved","green"|"Denied","red"');
 
         self::assertInstanceOf(CaseNode::class, $node);
         self::assertInstanceOf(VariableNode::class, $node->subject);
@@ -58,7 +58,7 @@ final class ParserTest extends TestCase
 
     public function testParsesCaseWithTrailingDefaultBranch(): void
     {
-        $node = $this->parse('Case ({Status})|"Approved","green"|"Denied","red"|"gray"');
+        $node = $this->parse('Case ([[Status]])|"Approved","green"|"Denied","red"|"gray"');
 
         self::assertInstanceOf(CaseNode::class, $node);
         self::assertCount(2, $node->whenClauses);
@@ -68,7 +68,7 @@ final class ParserTest extends TestCase
 
     public function testParsesLogicalAndOrAndNot(): void
     {
-        $node = $this->parse('If (NOT {A} AND {B} OR {C})|"yes"|"no"');
+        $node = $this->parse('If (NOT [[A]] AND [[B]] OR [[C]])|"yes"|"no"');
 
         self::assertInstanceOf(IfNode::class, $node);
         /** @var BinaryExpressionNode $or */
@@ -86,7 +86,7 @@ final class ParserTest extends TestCase
 
     public function testParsesParenthesizedExpression(): void
     {
-        $node = $this->parse('If (({A} AND {B}) OR {C})|1|2');
+        $node = $this->parse('If (([[A]] AND [[B]]) OR [[C]])|1|2');
 
         self::assertInstanceOf(IfNode::class, $node);
         self::assertInstanceOf(BinaryExpressionNode::class, $node->condition);
@@ -97,7 +97,7 @@ final class ParserTest extends TestCase
 
     public function testParsesBooleanAndNullLiterals(): void
     {
-        $node = $this->parse('If ({Active} == TRUE)|NULL|FALSE');
+        $node = $this->parse('If ([[Active]] == TRUE)|NULL|FALSE');
 
         self::assertInstanceOf(IfNode::class, $node);
         self::assertTrue($node->condition->right->value);
@@ -107,7 +107,7 @@ final class ParserTest extends TestCase
 
     public function testParsesNestedFormulaAsResultValue(): void
     {
-        $node = $this->parse('If ({A} < 1)|If ({B} < 1)|"both small"|"a small"|"neither"');
+        $node = $this->parse('If ([[A]] < 1)|If ([[B]] < 1)|"both small"|"a small"|"neither"');
 
         self::assertInstanceOf(IfNode::class, $node);
         self::assertInstanceOf(IfNode::class, $node->then);
@@ -128,7 +128,7 @@ final class ParserTest extends TestCase
 
     public function testParsesFunctionCallWithVariableAndMultipleArguments(): void
     {
-        $node = $this->parse('If (TRUE)|Lookup({ID}, "type")|"no"');
+        $node = $this->parse('If (TRUE)|Lookup([[ID]], "type")|"no"');
 
         self::assertInstanceOf(FunctionCallNode::class, $node->then);
         self::assertSame('Lookup', $node->then->name);
@@ -150,14 +150,14 @@ final class ParserTest extends TestCase
         $this->expectException(SyntaxException::class);
         $this->expectExceptionMessage('Expected "If" or "Case"');
 
-        $this->parse('Wat ({A} < 1)|1|2');
+        $this->parse('Wat ([[A]] < 1)|1|2');
     }
 
     public function testThrowsWhenIfMissingSecondPipe(): void
     {
         $this->expectException(SyntaxException::class);
 
-        $this->parse('If ({A} < 1)|"yes"');
+        $this->parse('If ([[A]] < 1)|"yes"');
     }
 
     public function testThrowsWhenCaseHasNoBranches(): void
@@ -165,7 +165,7 @@ final class ParserTest extends TestCase
         $this->expectException(SyntaxException::class);
         $this->expectExceptionMessage('requires at least one');
 
-        $this->parse('Case ({Status})');
+        $this->parse('Case ([[Status]])');
     }
 
     public function testThrowsWhenDefaultBranchIsNotLast(): void
@@ -173,7 +173,7 @@ final class ParserTest extends TestCase
         $this->expectException(SyntaxException::class);
         $this->expectExceptionMessage('must be the last branch');
 
-        $this->parse('Case ({Status})|"gray"|"Approved","green"');
+        $this->parse('Case ([[Status]])|"gray"|"Approved","green"');
     }
 
     public function testThrowsOnTrailingInput(): void
@@ -181,7 +181,7 @@ final class ParserTest extends TestCase
         $this->expectException(SyntaxException::class);
         $this->expectExceptionMessage('Unexpected trailing input');
 
-        $this->parse('If ({A} < 1)|1|2 extra');
+        $this->parse('If ([[A]] < 1)|1|2 extra');
     }
 
     public function testThrowsOnUnexpectedToken(): void

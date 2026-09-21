@@ -6,20 +6,24 @@ namespace Jthayne\FormulaEngine;
 
 use Jthayne\FormulaEngine\Ast\Node;
 use Jthayne\FormulaEngine\Compiler\Evaluator;
+use Jthayne\FormulaEngine\Compiler\FunctionCollector;
 use Jthayne\FormulaEngine\Compiler\PhpCodeCompiler;
 use Jthayne\FormulaEngine\Compiler\SqlCompiler;
 use Jthayne\FormulaEngine\Compiler\VariableCollector;
+use Jthayne\FormulaEngine\Exception\SyntaxException;
+use Jthayne\FormulaEngine\Exception\UndefinedFunctionException;
 use Jthayne\FormulaEngine\Lexer\Lexer;
 use Jthayne\FormulaEngine\Parser\Parser;
+use Jthayne\FormulaEngine\Runtime\FormulaRuntime;
 
 /**
  * Entry point for parsing and compiling user-authored formulas such as:
  *
- *   If ({Income} < 1000)|"poor"|"rich"
- *   Case ({Status})|"Approved","green"|"Denied","red"
- *   If ({SignupDate} == Today())|"new"|GetNameFromID({ID})
+ *   If ([[Income]] < 1000)|"poor"|"rich"
+ *   Case ([[Status]])|"Approved","green"|"Denied","red"
+ *   If ([[SignupDate]] == Today())|"new"|GetNameFromID([[ID]])
  *
- * Functions such as `Today()` or a caller-supplied `GetNameFromID({ID})` can
+ * Functions such as `Today()` or a caller-supplied `GetNameFromID([[ID]])` can
  * be called by name; see the `$functions` parameter of {@see evaluate()}
  * and {@see toClosure()}.
  */
@@ -80,7 +84,7 @@ final class FormulaEngine
      *                                            from the formula (e.g.
      *                                            `Today()`, or a
      *                                            caller-supplied
-     *                                            `GetNameFromID({ID})`
+     *                                            `GetNameFromID([[ID]])`
      *                                            closing over an external
      *                                            lookup). A function here
      *                                            overrides a built-in of
@@ -92,7 +96,7 @@ final class FormulaEngine
     }
 
     /**
-     * Return the distinct names of every {Variable} referenced by the
+     * Return the distinct names of every [[Variable]] referenced by the
      * formula, in order of first appearance.
      *
      * @return string[]
@@ -100,5 +104,74 @@ final class FormulaEngine
     public function getVariables(string $formula): array
     {
         return (new VariableCollector())->collect($this->parse($formula));
+    }
+
+    /**
+     * Return the distinct names of every function the formula calls (both
+     * built-in and custom), in order of first appearance.
+     *
+     * @return string[]
+     */
+    public function getFunctions(string $formula): array
+    {
+        return (new FunctionCollector())->collect($this->parse($formula));
+    }
+
+    /**
+     * Return the distinct names of every custom (non-built-in) function the
+     * formula calls, in order of first appearance.
+     *
+     * @return string[]
+     */
+    public function getCustomFunctions(string $formula): array
+    {
+        $builtIn = FormulaRuntime::builtInFunctionNames();
+
+        return array_values(array_filter(
+            $this->getFunctions($formula),
+            static fn (string $name): bool => !in_array($name, $builtIn, true)
+        ));
+    }
+
+    /**
+     * Check whether a formula will be able to run, without actually running
+     * it.
+     *
+     * Syntax is checked first: if the formula can't be tokenized or parsed,
+     * that failure is reported and function names aren't checked. Once the
+     * formula parses, every function it calls must either be a built-in
+     * (e.g. `Today()`) or be named in `$customFunctionNames` — the names you
+     * intend to pass in the `$functions` array at evaluation time.
+     *
+     * This does not check that `[[Variable]]` references exist, since the
+     * variables available aren't known until evaluation time; see
+     * {@see getVariables()} to inspect them ahead of time instead.
+     *
+     * @param string[] $customFunctionNames Names of the custom functions
+     *                                       you'll supply at evaluation
+     *                                       time (i.e. the keys of the
+     *                                       `$functions` array you intend to
+     *                                       pass to {@see evaluate()} or the
+     *                                       compiled closure).
+     * @return string|null An error message describing why the formula is
+     *                      invalid, or `null` if it's valid.
+     */
+    public function validate(string $formula, array $customFunctionNames = []): ?string
+    {
+        try {
+            $ast = $this->parse($formula);
+        } catch (SyntaxException $e) {
+            return $e->getMessage();
+        }
+
+        $knownFunctions = [...FormulaRuntime::builtInFunctionNames(), ...$customFunctionNames];
+
+        foreach ((new FunctionCollector())->collect($ast) as $name) {
+            if (!in_array($name, $knownFunctions, true)) {
+                return (new UndefinedFunctionException($name))->getMessage();
+            }
+        }
+
+        return null;
     }
 }

@@ -14,14 +14,14 @@ final class FormulaEngineTest extends TestCase
     {
         $engine = new FormulaEngine();
 
-        self::assertSame('poor', $engine->evaluate('If ({Income} < 1000)|"poor"|"rich"', ['Income' => 100]));
-        self::assertSame('rich', $engine->evaluate('If ({Income} < 1000)|"poor"|"rich"', ['Income' => 100000]));
+        self::assertSame('poor', $engine->evaluate('If ([[Income]] < 1000)|"poor"|"rich"', ['Income' => 100]));
+        self::assertSame('rich', $engine->evaluate('If ([[Income]] < 1000)|"poor"|"rich"', ['Income' => 100000]));
     }
 
     public function testEvaluateReturnsExpectedResultForCase(): void
     {
         $engine = new FormulaEngine();
-        $formula = 'Case ({Status})|"Approved","green"|"Denied","red"';
+        $formula = 'Case ([[Status]])|"Approved","green"|"Denied","red"';
 
         self::assertSame('green', $engine->evaluate($formula, ['Status' => 'Approved']));
         self::assertSame('red', $engine->evaluate($formula, ['Status' => 'Denied']));
@@ -30,7 +30,7 @@ final class FormulaEngineTest extends TestCase
     public function testToSqlAndToClosureAgreeWithEvaluate(): void
     {
         $engine = new FormulaEngine();
-        $formula = 'Case ({Status})|"Approved","green"|"Denied","red"|"gray"';
+        $formula = 'Case ([[Status]])|"Approved","green"|"Denied","red"|"gray"';
 
         $sql = $engine->toSql($formula, '`');
         self::assertSame(
@@ -54,13 +54,13 @@ final class FormulaEngineTest extends TestCase
 
         $this->expectException(SyntaxException::class);
 
-        $engine->evaluate('NotAFunction ({A})|1|2', []);
+        $engine->evaluate('NotAFunction ([[A]])|1|2', []);
     }
 
     public function testEvaluateCallsBuiltInAndCallerSuppliedFunctions(): void
     {
         $engine = new FormulaEngine();
-        $formula = 'If ({SignupDate} == Today())|"new"|GetNameFromID({ID})';
+        $formula = 'If ([[SignupDate]] == Today())|"new"|GetNameFromID([[ID]])';
 
         self::assertSame(
             'new',
@@ -83,17 +83,77 @@ final class FormulaEngineTest extends TestCase
 
         self::assertSame(
             ['Income'],
-            $engine->getVariables('If ({Income} < 1000)|"poor"|"rich"')
+            $engine->getVariables('If ([[Income]] < 1000)|"poor"|"rich"')
         );
 
         self::assertSame(
             ['Status'],
-            $engine->getVariables('Case ({Status})|"Approved","green"|"Denied","red"')
+            $engine->getVariables('Case ([[Status]])|"Approved","green"|"Denied","red"')
         );
 
         self::assertSame(
             ['B', 'A', 'C'],
-            $engine->getVariables('If ({B} > 0 AND {A} > 0)|{C}|{A}')
+            $engine->getVariables('If ([[B]] > 0 AND [[A]] > 0)|[[C]]|[[A]]')
+        );
+    }
+
+    public function testGetFunctionsReturnsDistinctNamesInOrderOfAppearanceIncludingBuiltIns(): void
+    {
+        $engine = new FormulaEngine();
+        $formula = 'If ([[SignupDate]] == Today())|"new"|GetNameFromID([[ID]])';
+
+        self::assertSame(['Today', 'GetNameFromID'], $engine->getFunctions($formula));
+    }
+
+    public function testGetCustomFunctionsExcludesBuiltIns(): void
+    {
+        $engine = new FormulaEngine();
+        $formula = 'If ([[SignupDate]] == Today())|"new"|GetNameFromID([[ID]])';
+
+        self::assertSame(['GetNameFromID'], $engine->getCustomFunctions($formula));
+    }
+
+    public function testGetCustomFunctionsReturnsEmptyArrayWhenOnlyBuiltInsAreUsed(): void
+    {
+        $engine = new FormulaEngine();
+
+        self::assertSame([], $engine->getCustomFunctions('If (Today() == Today())|"same"|"different"'));
+    }
+
+    public function testValidateReturnsNullForWellFormedFormulaUsingOnlyBuiltIns(): void
+    {
+        $engine = new FormulaEngine();
+
+        self::assertNull($engine->validate('If ([[Income]] < 1000)|"poor"|"rich"'));
+        self::assertNull($engine->validate('If ([[SignupDate]] == Today())|"new"|"old"'));
+    }
+
+    public function testValidateReturnsErrorMessageForInvalidSyntax(): void
+    {
+        $engine = new FormulaEngine();
+
+        self::assertSame(
+            'Expected "If" or "Case", found "NotAFunction" at position 0',
+            $engine->validate('NotAFunction ([[A]])|1|2')
+        );
+    }
+
+    public function testValidateReturnsErrorMessageForUnknownFunctionByDefault(): void
+    {
+        $engine = new FormulaEngine();
+
+        self::assertSame(
+            'Undefined function "GetNameFromID"',
+            $engine->validate('If ([[ID]] > 0)|GetNameFromID([[ID]])|"unknown"')
+        );
+    }
+
+    public function testValidateAcceptsCustomFunctionNamesSuppliedByCaller(): void
+    {
+        $engine = new FormulaEngine();
+
+        self::assertNull(
+            $engine->validate('If ([[ID]] > 0)|GetNameFromID([[ID]])|"unknown"', ['GetNameFromID'])
         );
     }
 }

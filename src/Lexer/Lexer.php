@@ -45,7 +45,7 @@ final class Lexer
                 continue;
             }
 
-            if ($char === '{') {
+            if ($char === '[' && ($source[$position + 1] ?? '') === '[') {
                 [$token, $position] = $this->readVariable($source, $position);
                 $tokens[] = $token;
                 continue;
@@ -95,19 +95,19 @@ final class Lexer
      */
     private function readVariable(string $source, int $start): array
     {
-        $end = strpos($source, '}', $start + 1);
+        $end = strpos($source, ']]', $start + 2);
 
         if ($end === false) {
-            throw new SyntaxException('Unterminated variable, missing "}"', $start);
+            throw new SyntaxException('Unterminated variable, missing "]]"', $start);
         }
 
-        $name = trim(substr($source, $start + 1, $end - $start - 1));
+        $name = trim(substr($source, $start + 2, $end - $start - 2));
 
         if ($name === '') {
             throw new SyntaxException('Variable name cannot be empty', $start);
         }
 
-        return [new Token(TokenType::Variable, $name, $start), $end + 1];
+        return [new Token(TokenType::Variable, $name, $start), $end + 2];
     }
 
     /**

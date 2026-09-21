@@ -13,7 +13,7 @@ final class LexerTest extends TestCase
 {
     public function testTokenizesIfFormula(): void
     {
-        $tokens = (new Lexer())->tokenize('If ({Income} < 1000)|"poor"|"rich"');
+        $tokens = (new Lexer())->tokenize('If ([[Income]] < 1000)|"poor"|"rich"');
 
         $types = array_map(static fn ($token) => $token->type, $tokens);
 
@@ -40,7 +40,7 @@ final class LexerTest extends TestCase
 
     public function testTokenizesCaseFormula(): void
     {
-        $tokens = (new Lexer())->tokenize('Case ({Status})|"Approved","green"|"Denied","red"');
+        $tokens = (new Lexer())->tokenize('Case ([[Status]])|"Approved","green"|"Denied","red"');
 
         $types = array_map(static fn ($token) => $token->type, $tokens);
 
@@ -61,9 +61,9 @@ final class LexerTest extends TestCase
         ], $types);
     }
 
-    public function testTrimsWhitespaceInsideVariableBraces(): void
+    public function testTrimsWhitespaceInsideVariableBrackets(): void
     {
-        $tokens = (new Lexer())->tokenize('{  Income  }');
+        $tokens = (new Lexer())->tokenize('[[  Income  ]]');
 
         self::assertSame('Income', $tokens[0]->value);
     }
@@ -97,7 +97,7 @@ final class LexerTest extends TestCase
         $this->expectException(SyntaxException::class);
         $this->expectExceptionMessage('Unterminated variable');
 
-        (new Lexer())->tokenize('{Income');
+        (new Lexer())->tokenize('[[Income');
     }
 
     public function testThrowsOnUnterminatedString(): void
@@ -113,7 +113,7 @@ final class LexerTest extends TestCase
         $this->expectException(SyntaxException::class);
         $this->expectExceptionMessage('Variable name cannot be empty');
 
-        (new Lexer())->tokenize('{ }');
+        (new Lexer())->tokenize('[[ ]]');
     }
 
     public function testThrowsOnUnexpectedCharacter(): void

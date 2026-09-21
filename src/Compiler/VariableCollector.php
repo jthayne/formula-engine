@@ -15,7 +15,7 @@ use Jthayne\FormulaEngine\Ast\UnaryExpressionNode;
 use Jthayne\FormulaEngine\Ast\VariableNode;
 
 /**
- * Walks a formula AST and collects the distinct names of every {Variable}
+ * Walks a formula AST and collects the distinct names of every [[Variable]]
  * it references, in order of first appearance.
  */
 final class VariableCollector implements NodeVisitor

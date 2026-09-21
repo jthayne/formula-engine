@@ -12,7 +12,7 @@ final class PhpCodeCompilerTest extends TestCase
 {
     public function testGeneratesFunctionSourceContainingReturnStatement(): void
     {
-        $code = (new FormulaEngine())->toPhpCode('If ({Income} < 1000)|"poor"|"rich"');
+        $code = (new FormulaEngine())->toPhpCode('If ([[Income]] < 1000)|"poor"|"rich"');
 
         self::assertStringContainsString('static function (array $variables, array $functions = []): mixed', $code);
         self::assertStringContainsString('return', $code);
@@ -22,7 +22,7 @@ final class PhpCodeCompilerTest extends TestCase
 
     public function testGeneratedClosureEvaluatesIfCorrectly(): void
     {
-        $closure = (new FormulaEngine())->toClosure('If ({Income} < 1000)|"poor"|"rich"');
+        $closure = (new FormulaEngine())->toClosure('If ([[Income]] < 1000)|"poor"|"rich"');
 
         self::assertSame('poor', $closure(['Income' => 500]));
         self::assertSame('rich', $closure(['Income' => 5000]));
@@ -31,7 +31,7 @@ final class PhpCodeCompilerTest extends TestCase
     public function testGeneratedClosureEvaluatesCaseCorrectly(): void
     {
         $closure = (new FormulaEngine())->toClosure(
-            'Case ({Status})|"Approved","green"|"Denied","red"|"gray"'
+            'Case ([[Status]])|"Approved","green"|"Denied","red"|"gray"'
         );
 
         self::assertSame('green', $closure(['Status' => 'Approved']));
@@ -41,7 +41,7 @@ final class PhpCodeCompilerTest extends TestCase
 
     public function testGeneratedClosureThrowsOnUndefinedVariable(): void
     {
-        $closure = (new FormulaEngine())->toClosure('If ({Income} < 1000)|"poor"|"rich"');
+        $closure = (new FormulaEngine())->toClosure('If ([[Income]] < 1000)|"poor"|"rich"');
 
         $this->expectException(UndefinedVariableException::class);
 
@@ -50,7 +50,7 @@ final class PhpCodeCompilerTest extends TestCase
 
     public function testGeneratedClosureHandlesLogicalOperators(): void
     {
-        $closure = (new FormulaEngine())->toClosure('If ({A} > 0 AND {B} > 0)|"both"|"not both"');
+        $closure = (new FormulaEngine())->toClosure('If ([[A]] > 0 AND [[B]] > 0)|"both"|"not both"');
 
         self::assertSame('both', $closure(['A' => 1, 'B' => 1]));
         self::assertSame('not both', $closure(['A' => 1, 'B' => -1]));
@@ -59,7 +59,7 @@ final class PhpCodeCompilerTest extends TestCase
     public function testGeneratedClosureHandlesNestedFormulas(): void
     {
         $closure = (new FormulaEngine())->toClosure(
-            'If ({A} < 1)|If ({B} < 1)|"both small"|"a small"|"neither"'
+            'If ([[A]] < 1)|If ([[B]] < 1)|"both small"|"a small"|"neither"'
         );
 
         self::assertSame('both small', $closure(['A' => 0, 'B' => 0]));
@@ -69,14 +69,14 @@ final class PhpCodeCompilerTest extends TestCase
 
     public function testGeneratedClosureCallsBuiltInFunctionWithoutCallerSupport(): void
     {
-        $closure = (new FormulaEngine())->toClosure('If ({Today} == Today())|"today"|"not today"');
+        $closure = (new FormulaEngine())->toClosure('If ([[Today]] == Today())|"today"|"not today"');
 
         self::assertSame('today', $closure(['Today' => (new \DateTimeImmutable())->format('Y-m-d')]));
     }
 
     public function testGeneratedClosureCallsCallerSuppliedFunction(): void
     {
-        $closure = (new FormulaEngine())->toClosure('If ({ID} > 0)|GetNameFromID({ID})|"none"');
+        $closure = (new FormulaEngine())->toClosure('If ([[ID]] > 0)|GetNameFromID([[ID]])|"none"');
 
         $result = $closure(['ID' => 42], ['GetNameFromID' => fn (int $id): string => "Name-{$id}"]);
 

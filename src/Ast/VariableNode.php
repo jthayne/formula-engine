@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace Jthayne\FormulaEngine\Ast;
 
 /**
- * A reference to a named variable, e.g. {Income}.
+ * A reference to a named variable, e.g. [[Income]].
  */
 final class VariableNode implements Node
 {

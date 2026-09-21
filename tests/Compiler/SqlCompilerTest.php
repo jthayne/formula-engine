@@ -22,14 +22,14 @@ final class SqlCompilerTest extends TestCase
 
     public function testCompilesIfToCaseWhen(): void
     {
-        $sql = $this->compile('If ({Income} < 1000)|"poor"|"rich"');
+        $sql = $this->compile('If ([[Income]] < 1000)|"poor"|"rich"');
 
         self::assertSame("CASE WHEN (Income < 1000) THEN 'poor' ELSE 'rich' END", $sql);
     }
 
     public function testCompilesCaseToCaseWhen(): void
     {
-        $sql = $this->compile('Case ({Status})|"Approved","green"|"Denied","red"');
+        $sql = $this->compile('Case ([[Status]])|"Approved","green"|"Denied","red"');
 
         self::assertSame(
             "CASE WHEN (Status) = ('Approved') THEN 'green' WHEN (Status) = ('Denied') THEN 'red' END",
@@ -39,7 +39,7 @@ final class SqlCompilerTest extends TestCase
 
     public function testCompilesCaseWithDefaultToElseClause(): void
     {
-        $sql = $this->compile('Case ({Status})|"Approved","green"|"Denied","red"|"gray"');
+        $sql = $this->compile('Case ([[Status]])|"Approved","green"|"Denied","red"|"gray"');
 
         self::assertSame(
             "CASE WHEN (Status) = ('Approved') THEN 'green' WHEN (Status) = ('Denied') THEN 'red' ELSE 'gray' END",
@@ -49,21 +49,21 @@ final class SqlCompilerTest extends TestCase
 
     public function testQuotesIdentifiersWhenRequested(): void
     {
-        $sql = $this->compile('If ({Income} < 1000)|"poor"|"rich"', '`');
+        $sql = $this->compile('If ([[Income]] < 1000)|"poor"|"rich"', '`');
 
         self::assertSame("CASE WHEN (`Income` < 1000) THEN 'poor' ELSE 'rich' END", $sql);
     }
 
     public function testEscapesSingleQuotesInStringLiterals(): void
     {
-        $sql = $this->compile('If ({Name} == "O\'Brien")|"match"|"no match"');
+        $sql = $this->compile('If ([[Name]] == "O\'Brien")|"match"|"no match"');
 
         self::assertStringContainsString("'O''Brien'", $sql);
     }
 
     public function testCompilesLogicalAndOrAndNot(): void
     {
-        $sql = $this->compile('If (NOT {A} AND ({B} > 1 OR {C} > 1))|1|0');
+        $sql = $this->compile('If (NOT [[A]] AND ([[B]] > 1 OR [[C]] > 1))|1|0');
 
         self::assertSame(
             'CASE WHEN (NOT (A) AND ((B > 1) OR (C > 1))) THEN 1 ELSE 0 END',
@@ -73,7 +73,7 @@ final class SqlCompilerTest extends TestCase
 
     public function testCompilesBooleanAndNullLiterals(): void
     {
-        $sql = $this->compile('If ({Active} == TRUE)|NULL|FALSE');
+        $sql = $this->compile('If ([[Active]] == TRUE)|NULL|FALSE');
 
         self::assertSame('CASE WHEN (Active = TRUE) THEN NULL ELSE FALSE END', $sql);
     }
@@ -83,6 +83,6 @@ final class SqlCompilerTest extends TestCase
         $this->expectException(UnsupportedFunctionException::class);
         $this->expectExceptionMessage('Function "Today" cannot be compiled to SQL');
 
-        $this->compile('If ({Date} == Today())|"today"|"not today"');
+        $this->compile('If ([[Date]] == Today())|"today"|"not today"');
     }
 }
