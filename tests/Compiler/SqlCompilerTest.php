@@ -78,6 +78,40 @@ final class SqlCompilerTest extends TestCase
         self::assertSame('CASE WHEN (Active = TRUE) THEN NULL ELSE FALSE END', $sql);
     }
 
+    public function testCompilesEqualsNullComparisonToIsNull(): void
+    {
+        self::assertSame(
+            'CASE WHEN (Income IS NULL) THEN 1 ELSE 0 END',
+            $this->compile('If ([[Income]] == NULL)|1|0')
+        );
+        self::assertSame(
+            'CASE WHEN (Income IS NULL) THEN 1 ELSE 0 END',
+            $this->compile('If (NULL == [[Income]])|1|0')
+        );
+    }
+
+    public function testCompilesNotEqualsNullComparisonToIsNotNull(): void
+    {
+        self::assertSame(
+            'CASE WHEN (Income IS NOT NULL) THEN 1 ELSE 0 END',
+            $this->compile('If ([[Income]] != NULL)|1|0')
+        );
+        self::assertSame(
+            'CASE WHEN (Income IS NOT NULL) THEN 1 ELSE 0 END',
+            $this->compile('If ([[Income]] <> NULL)|1|0')
+        );
+    }
+
+    public function testCompilesCaseWithNullBranchToIsNull(): void
+    {
+        $sql = $this->compile('Case ([[Status]])|NULL,"unknown"|"Approved","green"');
+
+        self::assertSame(
+            "CASE WHEN (Status) IS NULL THEN 'unknown' WHEN (Status) = ('Approved') THEN 'green' END",
+            $sql
+        );
+    }
+
     public function testCompilesArithmeticOperatorsWithPrecedence(): void
     {
         $sql = $this->compile('If (([[Income]] + [[Raise]]) <= 1000)|"poor"|"rich"');

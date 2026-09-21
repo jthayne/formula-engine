@@ -217,6 +217,10 @@ final class FormulaRuntime
             'Contains' => static fn (string $haystack, string $needle): bool => str_contains($haystack, $needle),
             'Replace' => static fn (string $haystack, string $needle, string $text): string
                 => str_replace($needle, $text, $haystack),
+            'Join' => static fn (mixed ...$values): string => implode('', array_map(
+                static fn (mixed $value): string => (string) $value,
+                $values
+            )),
             'Trim' => static fn (string $value): string => trim($value),
             'ToLower' => static fn (string $value): string => mb_strtolower($value),
             'ToUpper' => static fn (string $value): string => mb_strtoupper($value),

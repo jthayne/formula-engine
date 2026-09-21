@@ -500,6 +500,18 @@ final class EvaluatorTest extends TestCase
         self::assertSame('2024/03/05', $result);
     }
 
+    public function testEvaluatesBuiltInJoinFunction(): void
+    {
+        $formula = 'If (TRUE)|Join("https://example.com/?id=", [[ID]], "&mode=view")|"no"';
+
+        self::assertSame('https://example.com/?id=42&mode=view', $this->evaluate($formula, ['ID' => 42]));
+    }
+
+    public function testJoinReturnsEmptyStringForNoArguments(): void
+    {
+        self::assertSame('', $this->evaluate('If (TRUE)|Join()|"no"', []));
+    }
+
     public function testEvaluatesBuiltInTrimFunction(): void
     {
         $formula = 'If (TRUE)|Trim([[Value]])|"no"';

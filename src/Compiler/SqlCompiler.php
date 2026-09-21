@@ -56,12 +56,22 @@ final class SqlCompiler implements NodeVisitor
     {
         $operator = strtoupper($node->operator);
 
+        if (in_array($operator, ['==', '=', '!=', '<>'], true)) {
+            $negated = in_array($operator, ['!=', '<>'], true);
+
+            if ($this->isNullLiteral($node->left) || $this->isNullLiteral($node->right)) {
+                $operand = $this->isNullLiteral($node->left) ? $node->right : $node->left;
+
+                return sprintf('(%s IS%s NULL)', $operand->accept($this), $negated ? ' NOT' : '');
+            }
+
+            return sprintf('(%s %s %s)', $node->left->accept($this), $negated ? '<>' : '=', $node->right->accept($this));
+        }
+
         $sqlOperator = match ($operator) {
             'AND' => 'AND',
             'OR' => 'OR',
-            '==' => '=',
-            '!=', '<>' => '<>',
-            '=', '<', '<=', '>', '>=', '+', '-', '*', '/' => $node->operator,
+            '<', '<=', '>', '>=', '+', '-', '*', '/' => $node->operator,
             default => throw new \LogicException(sprintf('Unsupported operator "%s"', $node->operator)),
         };
 
@@ -98,12 +108,11 @@ final class SqlCompiler implements NodeVisitor
         $sql = 'CASE';
 
         foreach ($node->whenClauses as $clause) {
-            $sql .= sprintf(
-                ' WHEN (%s) = (%s) THEN %s',
-                $subjectSql,
-                $clause->when->accept($this),
-                $clause->then->accept($this)
-            );
+            $condition = $this->isNullLiteral($clause->when)
+                ? sprintf('(%s) IS NULL', $subjectSql)
+                : sprintf('(%s) = (%s)', $subjectSql, $clause->when->accept($this));
+
+            $sql .= sprintf(' WHEN %s THEN %s', $condition, $clause->then->accept($this));
         }
 
         if ($node->default !== null) {
@@ -111,6 +120,11 @@ final class SqlCompiler implements NodeVisitor
         }
 
         return $sql . ' END';
+    }
+
+    private function isNullLiteral(Node $node): bool
+    {
+        return $node instanceof LiteralNode && $node->value === null;
     }
 
     private function quoteIdentifier(string $name): string
